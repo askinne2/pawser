@@ -1,0 +1,96 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: pawser-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-pawser}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    ports:
+      - '5434:5432'  # Using 5434 to avoid conflict with other PostgreSQL instances
+    volumes:
+      - pawser_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-postgres}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: pawser-redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - pawser_redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api
+    container_name: pawser-api
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 3002
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-pawser}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-change-me-in-production}
+      CORS_ORIGIN: ${CORS_ORIGIN:-*}
+    ports:
+      - '3002:3002'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ../apps/api:/app
+      - /app/node_modules
+
+  admin:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.admin
+    container_name: pawser-admin
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      API_URL: http://api:3002
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+    ports:
+      - '3001:3000'
+    depends_on:
+      - api
+    volumes:
+      - ../apps/admin:/app
+      - /app/node_modules
+      - /app/.next
+
+  portal:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.portal
+    container_name: pawser-portal
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      NEXT_PUBLIC_API_URL: http://localhost:3002
+    ports:
+      - '3000:3000'
+    depends_on:
+      - api
+    volumes:
+      - ../apps/portal:/app
+      - /app/node_modules
+      - /app/.next
+
+volumes:
+  pawser_postgres_data:
+  pawser_redis_data:
+
