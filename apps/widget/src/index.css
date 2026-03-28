@@ -3,3 +3,25 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Scoped widget shell — no host-page preflight; isolate stacking for overlays */
+#pawser-root {
+  --widget-primary: #00113f;
+  box-sizing: border-box;
+  font-family: 'Source Sans 3', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  isolation: isolate;
+  line-height: 1.5;
+  color: #1a1b20;
+}
+
+#pawser-root *,
+#pawser-root *::before,
+#pawser-root *::after {
+  box-sizing: border-box;
+}
+
+/* Lightbox (yet-another-react-lightbox) portals inside body — keep visuals aligned with widget */
+.yarl__root {
+  --yarl__color_backdrop: rgba(0, 0, 0, 0.45);
+}

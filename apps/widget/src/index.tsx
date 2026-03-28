@@ -19,6 +19,9 @@ if (!rootEl) {
   );
 }
 
+const brandColor = settings.primaryColor || '#00113f';
+rootEl.style.setProperty('--widget-primary', brandColor);
+
 const root = ReactDOM.createRoot(rootEl);
 root.render(
   <React.StrictMode>

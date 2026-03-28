@@ -1,18 +1,22 @@
 # PRD-15: Frontend Portal Customization Settings
 
-> **Type:** Frontend PRD  
-> **Feature:** Portal Customization & Status Configuration  
-> **Priority:** High  
-> **Status:** 🔲 Planning  
-> **Depends On:** PRD-11 (Organization Settings), PRD-04 (Data Sync)
+> **Type:** Frontend PRD
+> **Feature:** Portal Customization & Status Configuration
+> **Priority:** High
+> **Status:** 🟡 Partial
+> **Last Updated:** 2026-03-28
+> **Depends On:** PRD-11 (Organization Settings), PRD-04 (Data Sync), PRD-16 (Widget Embed Bundle)
 >
 > **Implementation Notes:**
-> - 🔲 Database schema updates needed (discoveredStatuses, syncStatuses, displayStatuses, statusMapping)
-> - 🔲 Status discovery during sync not implemented
-> - 🔲 Sync Settings UI tab not implemented
-> - 🔲 Appearance settings (colors, styles) not implemented
+> - The "portal customization" scope has shifted: the primary customization surface is the **Widget Builder** screen in the admin dashboard (`apps/admin/app/(dashboard)/widget-builder/page.tsx`), not a separate portal settings page.
+> - ✅ Widget Builder UI exists: brand color picker, button/card style toggles, species checkboxes, animals-per-page, adoption URL, adoption process text
+> - ✅ Live preview panel updates in real-time via React state
+> - 🟡 Settings form does NOT yet save to `PUT /api/v1/organizations/:id/settings` — save button wired to local state only
+> - 🟡 `primaryColor` from org settings not yet passed to widget at embed time
+> - 🔲 Status discovery during sync (discoveredStatuses) not implemented
+> - 🔲 Sync/display status multi-select UI not implemented
 > - 🔲 Custom CSS injection not implemented
-> - This PRD consolidates WordPress plugin settings migration
+> - Note: This PRD originally consolidated WordPress plugin settings migration, which is now moot (PRD-03 superseded).
 
 **Date:** 2016-01-14  
 **Related PRDs:** PRD-11 (Organization Settings & White-Label), PRD-01 (Frontend Public Animal Portal)

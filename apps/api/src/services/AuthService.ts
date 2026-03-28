@@ -36,6 +36,7 @@ export interface AuthUser {
   isSuperAdmin: boolean;
   memberships: Array<{
     orgId: string;
+    orgSlug: string;
     orgName: string;
     role: string;
   }>;
@@ -168,6 +169,7 @@ export class AuthService {
       memberships: [
         {
           orgId: org.id,
+          orgSlug: org.slug,
           orgName: org.name,
           role: 'owner',
         },
@@ -239,6 +241,7 @@ export class AuthService {
       isSuperAdmin: user.isSuperAdmin,
       memberships: user.memberships.map((m) => ({
         orgId: m.orgId,
+        orgSlug: m.organization.slug,
         orgName: m.organization.name,
         role: m.role,
       })),
@@ -345,6 +348,7 @@ export class AuthService {
       isSuperAdmin: user.isSuperAdmin,
       memberships: user.memberships.map((m) => ({
         orgId: m.orgId,
+        orgSlug: m.organization.slug,
         orgName: m.organization.name,
         role: m.role,
       })),
@@ -406,6 +410,7 @@ export class AuthService {
       isSuperAdmin: user.isSuperAdmin,
       memberships: user.memberships.map((m) => ({
         orgId: m.orgId,
+        orgSlug: m.organization.slug,
         orgName: m.organization.name,
         role: m.role,
       })),

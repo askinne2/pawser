@@ -1,18 +1,21 @@
 # Team Member Management
 
-> **Type:** Frontend PRD  
-> **Feature:** Organization Team Management  
-> **Priority:** P0 (Critical)  
-> **Status:** 🟡 Scaffolded  
+> **Type:** Frontend PRD
+> **Feature:** Organization Team Management
+> **Priority:** P0 (Critical)
+> **Status:** 🟡 Partial
+> **Last Updated:** 2026-03-28
 > **Depends On:** PRD-05 (Auth & RBAC), PRD-09 (User Management)
 >
 > **Implementation Notes:**
-> - ✅ API routes created at `apps/api/src/routes/members.ts`
+> - ✅ API routes at `apps/api/src/routes/members.ts`
 > - ✅ Team members page at `apps/admin/app/(dashboard)/organizations/[id]/members/page.tsx`
-> - 🟡 Invitation flow needs testing (depends on PRD-12 Email)
-> - 🟡 Role change needs testing
-> - 🟡 Remove member needs testing
-> - 🟡 Transfer ownership needs testing
+> - ✅ `Invitation` model in schema supports invite-by-email flow
+> - 🟡 Invitation flow untested (email delivery depends on PRD-12)
+> - 🟡 Role change action not tested end-to-end
+> - 🟡 Remove member action not tested end-to-end
+> - 🟡 "Last owner" guard (cannot remove last owner) present in API but untested
+> - 🟡 Page not yet wired to `/api/proxy/` — uses mock data
 
 ---
 

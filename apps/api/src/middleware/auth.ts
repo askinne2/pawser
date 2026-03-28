@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { prisma } from '@pawser/database';
 
 /**
  * JWT payload structure matching AuthService
@@ -52,13 +53,33 @@ export function authenticate(
   // Dev mode auth bypass (for local development only)
   if (process.env.NODE_ENV === 'development' && process.env.DEV_AUTH_BYPASS === 'true') {
     console.warn('⚠️  DEV MODE: Authentication bypass is enabled');
-    req.user = {
-      id: 'dev-user-id',
-      email: 'dev@localhost',
-      role: 'super_admin',
-      isSuperAdmin: true,
-    };
-    return next();
+    // Look up the real seeded super admin so /auth/me and DB queries work correctly
+    prisma.user
+      .findFirst({
+        where: { isSuperAdmin: true },
+        include: { memberships: { take: 1, orderBy: { createdAt: 'asc' } } },
+      })
+      .then((devUser) => {
+        if (devUser) {
+          req.user = {
+            id: devUser.id,
+            email: devUser.email,
+            role: 'super_admin',
+            isSuperAdmin: true,
+            tenantId: devUser.memberships[0]?.orgId,
+            tenantRole: devUser.memberships[0]?.role,
+          };
+        } else {
+          // Fallback if seed hasn't run yet
+          req.user = { id: 'dev-user-id', email: 'dev@localhost', role: 'super_admin', isSuperAdmin: true };
+        }
+        next();
+      })
+      .catch(() => {
+        req.user = { id: 'dev-user-id', email: 'dev@localhost', role: 'super_admin', isSuperAdmin: true };
+        next();
+      });
+    return;
   }
 
   try {

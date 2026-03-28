@@ -134,6 +134,15 @@ function mapSpecies(shelterLuvSpecies: string): AnimalSpecies {
 }
 
 /**
+ * Stable row id from a ShelterLuv animal (ID preferred; API uses Internal-ID in JSON)
+ */
+function shelterLuvRowKey(animal: ShelterLuvAnimal): string {
+  const row = animal as Record<string, unknown>;
+  const id = animal.ID ?? animal.InternalID ?? row['Internal-ID'];
+  return id != null && String(id).length > 0 ? String(id) : '';
+}
+
+/**
  * Map ShelterLuv status to canonical status
  */
 function mapStatus(shelterLuvStatus: string): AnimalStatus {
@@ -361,63 +370,61 @@ export const syncWorker = new Worker<SyncJobData>(
         },
       });
 
-      // Fetch animals from ShelterLuv API
+      // Fetch animals from ShelterLuv API (respect has_more / total_count; dedupe if API repeats pages)
       const allAnimals: ShelterLuvAnimal[] = [];
+      const seenRowKeys = new Set<string>();
       let page = 1;
       const limit = 100;
-      let hasMore = true;
+      const maxPages = 100;
 
-      // For incremental sync, we could use a modified_since parameter if the API supports it
-      // For now, we do a full fetch but only upsert changed records
-
-      while (hasMore) {
+      while (page <= maxPages) {
         job.updateProgress(Math.min(page * 10, 50));
 
-        // Fetch publishable animals from API (ShelterLuv API only supports status_type, not status)
-        const animals = await shelterLuvService.getAnimals({
+        const { animals, hasMore, totalCount } = await shelterLuvService.getAnimals({
           page,
           limit,
           status_type: 'publishable',
         });
 
         if (animals.length === 0) {
-          hasMore = false;
-        } else {
-          // Filter to only currently available animals (not historical publishable ones)
-          // ShelterLuv returns Status like "Available For Adoption", "Awaiting Vet Exam / Health Check", etc.
-          // Default: include animals with "Available" in their Status
-          const availableStatuses = [
-            'Available For Adoption',
-            'Available for Adoption', // Case variation
-          ];
-          
-          const availableAnimals = (animals as unknown as ShelterLuvAnimal[]).filter(
-            (animal) => availableStatuses.some(status => 
-              animal.Status?.toLowerCase() === status.toLowerCase()
-            )
-          );
-          
-          allAnimals.push(...availableAnimals);
-          
-          // Log filtering on first page
-          if (page === 1) {
-            console.log(`Filtering: ${availableAnimals.length} of ${animals.length} animals match 'Available For Adoption' status`);
-          }
-          
-          page++;
-
-          // Stop if we got an empty page from the API (no more results)
-          if (animals.length === 0) {
-            hasMore = false;
-          }
-          
-          // Safety limit: prevent infinite loops
-          const maxPages = 100;
-          if (page > maxPages) {
-            console.warn(`Reached max pages limit (${maxPages}) for org ${orgId}`);
-            hasMore = false;
-          }
+          break;
         }
+
+        const availableStatuses = [
+          'Available For Adoption',
+          'Available for Adoption',
+        ];
+
+        const availableAnimals = (animals as unknown as ShelterLuvAnimal[]).filter((animal) =>
+          availableStatuses.some((status) => animal.Status?.toLowerCase() === status.toLowerCase())
+        );
+
+        for (const animal of availableAnimals) {
+          const key = shelterLuvRowKey(animal);
+          if (!key || seenRowKeys.has(key)) {
+            continue;
+          }
+          seenRowKeys.add(key);
+          allAnimals.push(animal);
+        }
+
+        if (page === 1) {
+          const totalHint = totalCount != null ? ` (ShelterLuv total_count=${totalCount})` : '';
+          console.log(
+            `Filtering: ${availableAnimals.length} of ${animals.length} animals match 'Available For Adoption' status${totalHint}`
+          );
+        }
+
+        if (!hasMore) {
+          break;
+        }
+
+        if (page === maxPages) {
+          console.warn(`Reached max pages limit (${maxPages}) for org ${orgId}`);
+          break;
+        }
+
+        page++;
       }
 
       itemsFetched = allAnimals.length;

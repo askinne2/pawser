@@ -1,6 +1,15 @@
 import axios, { AxiosInstance } from 'axios';
 import { Animal, AnimalParams } from '@pawser/shared';
 
+/** One page from GET /animals — includes ShelterLuv pagination flags */
+export interface ShelterLuvAnimalsPage {
+  animals: Animal[];
+  /** From API `has_more`; when absent, inferred from page size vs limit */
+  hasMore: boolean;
+  /** From API `total_count` when present */
+  totalCount: number | null;
+}
+
 /**
  * Service for interacting with ShelterLuv API
  * Handles API calls with tenant-specific credentials
@@ -25,29 +34,23 @@ export class ShelterLuvService {
   }
 
   /**
-   * Get animals from ShelterLuv API
+   * Get animals from ShelterLuv API (one page, with pagination metadata)
    */
-  async getAnimals(params: AnimalParams = {}): Promise<Animal[]> {
+  async getAnimals(params: AnimalParams = {}): Promise<ShelterLuvAnimalsPage> {
     try {
       // Format parameters for ShelterLuv API
       const queryParams: Record<string, string> = {};
 
       // Status filtering: ShelterLuv API uses status_type parameter
-      // Note: status_type='publishable' gets all publishable animals (including historical)
-      // We'll filter by actual Status field after fetching to get only currently available
       if (params.status_type) {
         queryParams.status_type = params.status_type;
       } else {
-        // Default to publishable - we'll filter by Status='Available' in the sync worker
         queryParams.status_type = 'publishable';
       }
-      
-      // Note: ShelterLuv API doesn't support filtering by actual Status field in the query
-      // We must filter results after fetching
 
-      // Pagination
-      if (params.page) {
-        queryParams.page = params.page.toString();
+      // Pagination — always send page when provided (use >= 1; 0 is invalid)
+      if (params.page !== undefined && params.page !== null) {
+        queryParams.page = String(params.page);
       }
       if (params.limit) {
         queryParams.limit = params.limit.toString();
@@ -76,11 +79,24 @@ export class ShelterLuvService {
         params: queryParams,
       });
 
-      if (response.data && Array.isArray(response.data.animals)) {
-        return response.data.animals as Animal[];
+      const data = response.data as Record<string, unknown> | undefined;
+      const animals = data && Array.isArray(data.animals) ? (data.animals as Animal[]) : [];
+
+      const limitNum = parseInt(queryParams.limit || '100', 10);
+      const rawHasMore = data?.has_more;
+      const rawTotal = data?.total_count;
+
+      let hasMore: boolean;
+      if (typeof rawHasMore === 'boolean') {
+        hasMore = rawHasMore;
+      } else {
+        // Older responses without has_more: assume another page only if this one is full
+        hasMore = animals.length >= limitNum && animals.length > 0;
       }
 
-      return [];
+      const totalCount = typeof rawTotal === 'number' ? rawTotal : null;
+
+      return { animals, hasMore, totalCount };
     } catch (error) {
       if (axios.isAxiosError(error)) {
         throw new Error(

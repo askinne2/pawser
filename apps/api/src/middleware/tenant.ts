@@ -152,8 +152,9 @@ export async function resolveTenant(
       return;
     }
 
-    // Extract slug from host
-    const slug = extractSlugFromHost(host);
+    // Resolve slug: prefer host-based subdomain, fall back to ?orgSlug query param
+    // (widget embeds call the API directly with ?orgSlug=xxx from any host page)
+    const slug = extractSlugFromHost(host) || (req.query.orgSlug as string | undefined) || null;
 
     if (!slug) {
       res.status(404).json({

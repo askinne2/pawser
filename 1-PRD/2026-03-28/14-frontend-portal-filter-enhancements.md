@@ -1,18 +1,20 @@
 # Portal Filter & UX Enhancements
 
-> **Type:** Frontend PRD  
-> **Feature:** Public Portal Filter System & UX Improvements  
-> **Priority:** P2 (Nice to Have)  
-> **Status:** 🟡 Scaffolded  
-> **Depends On:** PRD-01 (Public Animal Portal)
+> **Type:** Frontend PRD
+> **Feature:** Public Portal Filter System & UX Improvements
+> **Priority:** P2 (Nice to Have)
+> **Status:** ❌ Superseded
+> **Last Updated:** 2026-03-28
+> **Depends On:** PRD-01 (Public Animal Portal) — which is itself superseded
 >
 > **Implementation Notes:**
-> - ✅ FilterSidebar created at `apps/portal/app/[domain]/animals/FilterSidebar.tsx`
-> - ✅ Desktop sidebar layout
-> - ✅ Mobile drawer/bottom sheet
-> - ✅ URL state synchronization
-> - ✅ Basic facet counts
-> - 🟡 Breed filter needs testing
+> - This PRD was scoped to the Next.js hosted-portal approach (PRD-01), which is superseded.
+> - Filter components were built and are now owned by `apps/widget`:
+>   - `FilterSidebar` → `apps/widget/src/components/FilterSidebar.tsx`
+>   - `FilterDrawer` (mobile) → `apps/widget/src/components/FilterDrawer.tsx`
+> - The original portal-level `apps/portal/app/[domain]/animals/FilterSidebar.tsx` is retained for the demo/preview environment only.
+> - All future filter UX investment should target `apps/widget`, not `apps/portal`.
+> - Scope of filter features (species, sex, size, age, breed, good-with, special-needs) applies equally to the widget — see PRD-16.
 > - 🟡 Age range slider needs testing
 > - 🟡 Good-with toggles need testing
 > - 🟡 Share/print functionality not implemented

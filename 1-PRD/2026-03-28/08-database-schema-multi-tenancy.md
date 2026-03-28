@@ -1,8 +1,25 @@
 # Database Schema & Multi-Tenancy
 
-> **Type:** Database PRD  
-> **Feature:** Database Schema & Multi-Tenancy  
+> **Type:** Database PRD
+> **Feature:** Database Schema & Multi-Tenancy
+> **Priority:** Phase 1
+> **Status:** ✅ Complete
+> **Last Updated:** 2026-03-28
 > **Source:** CodeSpring PRD `bc169afb-40a8-48e5-b76f-1e1f6b371b42`
+>
+> **Implementation Notes:**
+> - ✅ 25 Prisma models defined in `packages/database/prisma/schema.prisma` (originally 19 planned)
+> - ✅ Core identity: `Organization`, `User`, `PasswordCredential`, `Membership`
+> - ✅ Auth: `MagicLink`, `ApiToken`, `RefreshToken`, `PasswordResetToken`, `Invitation`
+> - ✅ Tenancy: `DomainMapping`, `IntegrationCredential`, `DataSource`
+> - ✅ Content: `Location`, `Animal`, `MediaAsset`
+> - ✅ Sync: `SyncRun`, `SyncState`
+> - ✅ Billing: `Plan`, `Subscription`, `Invoice`
+> - ✅ Operations: `AuditLog`, `WebhookEvent`
+> - ✅ Settings: `OrganizationSetting` (key-value), `OrganizationSettings` (typed v2)
+> - ✅ Email: `EmailLog`
+> - 🟡 PostgreSQL RLS (Row Level Security) not enforced — tenant isolation enforced at application layer only
+> - 🟡 `OrganizationSettings` v2 model exists but application routes still use `OrganizationSetting` key-value store
 
 ---
 
@@ -394,3 +411,12 @@ Tenant-safe, row-level multi-tenancy for ShelterLuv-powered adoption data with o
 | Credential rotation | Successful without data loss; audit trail present |
 | Domain uniqueness | Enforced at DB level; single primary per org |
 | Stripe linkage | Consistent across billing tables |
+
+## Implementation Status
+
+✅ All 19 tables created in Prisma schema  
+✅ AES-256-GCM encryption for credentials  
+✅ Seed script with demo data  
+⚠️ Missing: RLS policies enabled  
+⚠️ Missing: Partial indexes  
+⚠️ Missing: Data retention job

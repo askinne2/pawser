@@ -1,18 +1,20 @@
 # Organization Settings & White-Label
 
-> **Type:** Frontend PRD  
-> **Feature:** Organization Settings & White-Label Customization  
-> **Priority:** P0 (Critical)  
-> **Status:** 🟡 Scaffolded  
+> **Type:** Frontend PRD
+> **Feature:** Organization Settings & White-Label Customization
+> **Priority:** P0 (Critical)
+> **Status:** 🟡 Partial
+> **Last Updated:** 2026-03-28
 > **Depends On:** PRD-08 (Database Schema)
 >
 > **Implementation Notes:**
-> - ✅ API routes created at `apps/api/src/routes/settings.ts`
+> - ✅ API routes at `apps/api/src/routes/settings.ts` and `apps/api/src/routes/organizations.ts`
 > - ✅ Settings page at `apps/admin/app/(dashboard)/organizations/[id]/settings/page.tsx`
-> - ✅ Tabbed interface (General, Branding, Portal, Domains)
-> - 🟡 Logo/favicon upload needs testing
-> - 🟡 Settings persistence needs testing
-> - See PRD-15 for extended customization settings (colors, styles, status config)
+> - ✅ `PUT /api/v1/organizations/:id/settings` endpoint exists with `requireOwnOrgOrSuperAdmin` RBAC
+> - 🟡 Settings page not yet wired to real API via proxy — uses mock data
+> - 🟡 Logo/favicon upload not implemented (depends on R2 media worker)
+> - 🟡 `primaryColor` setting persists to `Organization` model but widget doesn't yet read it dynamically
+> - See PRD-15 for widget-builder-level customization (the primary customization surface for shelter owners)
 
 ---
 

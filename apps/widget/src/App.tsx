@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { HashRouter, Routes, Route, useNavigate, useParams } from 'react-router-dom';
 import { AnimalGrid } from './components/AnimalGrid';
 import { AnimalDetail } from './components/AnimalDetail';
@@ -8,7 +7,7 @@ import type { PawserAnimal, PawserSettings } from './types';
 function AnimalDetailRoute({ settings }: { settings: PawserSettings }) {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { animal, loading } = useAnimal(settings.apiUrl, id || '');
+  const { animal, loading } = useAnimal(settings.apiUrl, settings.orgSlug, id || '');
 
   if (loading) {
     return (
@@ -30,7 +29,6 @@ function AnimalDetailRoute({ settings }: { settings: PawserSettings }) {
     <AnimalDetail
       animal={animal}
       adoptUrlBase={settings.adoptUrlBase}
-      primaryColor={settings.primaryColor}
       onBack={() => navigate('/')}
     />
   );
@@ -52,7 +50,7 @@ interface AppProps {
 
 export default function App({ settings }: AppProps) {
   return (
-    <HashRouter>
+    <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <div className="font-body">
         <Routes>
           <Route path="/" element={<AnimalListRoute settings={settings} />} />

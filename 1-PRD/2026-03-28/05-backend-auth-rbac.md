@@ -1,8 +1,27 @@
 # Auth & RBAC
 
-> **Type:** Backend PRD  
-> **Feature:** Authentication & Role-Based Access Control  
+> **Type:** Backend PRD
+> **Feature:** Authentication & Role-Based Access Control
+> **Priority:** Phase 1
+> **Status:** ✅ Complete
+> **Last Updated:** 2026-03-28
 > **Source:** CodeSpring PRD `701707f1-8294-41f9-8669-00c741c40d59`
+>
+> **Implementation Notes:**
+> - ✅ JWT access tokens (15 min) + refresh tokens (30 days, with rotation)
+> - ✅ Tokens stored as `HttpOnly; SameSite=Lax` cookies — never exposed to client JS
+> - ✅ Login (`POST /api/v1/auth/login`), logout (`POST /api/auth/logout`), refresh (`POST /api/auth/refresh`) all working
+> - ✅ `GET /api/v1/auth/me` returns user + memberships
+> - ✅ `POST /api/v1/auth/register` creates user + org in one transaction
+> - ✅ Role hierarchy: `super_admin(100) > owner(80) > admin(60) > viewer(40)`
+> - ✅ `requireRole()` middleware enforces hierarchy; `requireOwnOrgOrSuperAdmin()` scopes org routes
+> - ✅ Admin middleware (Next.js Edge) guards all dashboard routes; redirects to `/login` on missing/invalid cookie
+> - ✅ `OrgProvider` React context fetches `/api/v1/auth/me` on mount; handles session expiry
+> - ✅ Generic API proxy (`/api/proxy/[...path]`) forwards httpOnly cookie as Bearer token to Express; auto-refreshes on 401
+> - ✅ Password reset API routes + admin UI pages exist
+> - 🟡 Magic link flow: API routes exist, email delivery untested (depends on PRD-12)
+> - 🟡 Session invalidation on password change not explicitly tested
+> - 🟡 `DEV_AUTH_BYPASS=true` bypass still present — must be disabled before production deploy
 
 ---
 
@@ -15,12 +34,12 @@ Implements multi-tenant authentication (email/password and magic link) and role-
 ### Identity
 
 - Unique email per user (case-insensitive), optional password (magic-link-only accounts allowed)
-- **Password policy:** min 10 chars; block known-compromised passwords; Argon2id hashing
+- **Password policy:** min 10 chars; block known-compromised passwords; scrypt hashing (bcrypt fallback)
 - Email verification via magic link for first login; single-use, 15-minute TTL
 
 ### Sessions & Tokens
 
-- Access token (JWT, 15 min) + refresh token (rolling, 30 days). Refresh revocable server-side.
+- Access token (JWT, 15 min or 24h in dev) + refresh token (rolling, 30 days). Refresh revocable server-side.
 - Store refresh sessions (Redis) by jti; revoke on logout, password change, role/membership changes, or admin action.
 - Support `httpOnly`, `Secure`, `SameSite=Lax` cookies and `Authorization: Bearer` header.
 
@@ -130,7 +149,7 @@ Revokes session; 204 No Content.
 
 **POST /v1/tenants/:tenantId/invitations** `{ email, role }` (admin+)
 
-**POST /v1/tenants/:tenantId/members/:userId/role** `{ role }` (owner only; prevent removing last owner)
+**PUT /v1/tenants/:tenantId/members/:userId/role** `{ role }` (owner only; prevent removing last owner)
 
 **DELETE /v1/tenants/:tenantId/members/:userId** (owner; not last owner; cannot remove self if sole owner)
 
@@ -193,3 +212,14 @@ invitations(id, tenant_id, email, role, token_hash, expires_at, accepted_at)
 | RBAC enforcement | Unit/integration tests cover role and tenant boundaries |
 | Last owner protection | Attempts to demote blocked |
 | Audit logging | All sensitive actions logged and visible in Sentry/analytics |
+
+## Implementation Status
+
+✅ Email/password login  
+✅ JWT access/refresh tokens  
+✅ Role hierarchy checks  
+✅ Basic auth middleware  
+⚠️ Missing: Magic link UI flow  
+⚠️ Missing: Password reset UI (see PRD-13)  
+⚠️ Missing: Rate limiting  
+⚠️ Missing: Account lockout

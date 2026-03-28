@@ -1,18 +1,21 @@
 # Password Reset Flow
 
-> **Type:** Backend PRD  
-> **Feature:** Password Reset & Recovery  
-> **Priority:** P1 (Important)  
-> **Status:** 🟡 Scaffolded  
+> **Type:** Backend PRD
+> **Feature:** Password Reset & Recovery
+> **Priority:** P1 (Important)
+> **Status:** 🟡 Partial
+> **Last Updated:** 2026-03-28
 > **Depends On:** PRD-12 (Email System), PRD-05 (Auth & RBAC)
 >
 > **Implementation Notes:**
-> - ✅ PasswordResetService created at `apps/api/src/services/PasswordResetService.ts`
-> - ✅ API routes added to `apps/api/src/routes/auth.ts`
-> - ✅ Forgot password page at `apps/admin/app/(auth)/forgot-password/page.tsx`
-> - ✅ Reset password page at `apps/admin/app/(auth)/reset-password/page.tsx`
-> - ✅ Token generation and validation
-> - 🟡 End-to-end flow needs testing
+> - ✅ `PasswordResetService` at `apps/api/src/services/PasswordResetService.ts`
+> - ✅ `PasswordResetToken` model in schema
+> - ✅ `POST /api/v1/auth/password/forgot` and `POST /api/v1/auth/password/reset` routes in `auth.ts`
+> - ✅ Admin UI: `apps/admin/app/(auth)/forgot-password/page.tsx` (Kindred Slate styled)
+> - ✅ Admin UI: `apps/admin/app/(auth)/reset-password/page.tsx` (Kindred Slate styled)
+> - ✅ Token generation and 1-hour TTL validation
+> - 🟡 Email delivery of reset link untested (depends on PRD-12 Resend integration)
+> - 🟡 Full end-to-end flow (request → email → link → form → success) not tested
 > - 🟡 Depends on Email System (PRD-12) for delivery
 
 ---

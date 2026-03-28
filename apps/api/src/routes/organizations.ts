@@ -1,4 +1,4 @@
-import { Router, Response } from 'express';
+import { Router, Response, NextFunction } from 'express';
 import { TenantService } from '../services/TenantService';
 import { encryptWithComponents } from '../utils/encryption';
 import { authenticate, requireRole, AuthRequest } from '../middleware/auth';
@@ -8,6 +8,49 @@ import { prisma } from '@pawser/database';
 
 const router = Router();
 const tenantService = new TenantService();
+
+/**
+ * Middleware: allow super_admin unconditionally, or owner/admin only for their own org.
+ * Prevents cross-tenant data access by non-super-admins.
+ */
+function requireOwnOrgOrSuperAdmin(req: AuthRequest, res: Response, next: NextFunction): void {
+  if (!req.user) {
+    res.status(401).json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } });
+    return;
+  }
+
+  if (req.user.isSuperAdmin) {
+    return next();
+  }
+
+  // Non-super-admin: must be scoped to their own org
+  const orgId = req.params.id;
+  if (!orgId) {
+    res.status(400).json({ success: false, error: { code: 'BAD_REQUEST', message: 'Organization ID is required' } });
+    return;
+  }
+
+  if (req.user.tenantId !== orgId) {
+    res.status(403).json({
+      success: false,
+      error: { code: 'FORBIDDEN', message: 'You can only access your own organization' },
+    });
+    return;
+  }
+
+  // Must have at least admin-level role within their own org
+  const role = req.user.tenantRole || req.user.role;
+  const allowedRoles = new Set(['owner', 'admin', 'super_admin']);
+  if (!allowedRoles.has(role)) {
+    res.status(403).json({
+      success: false,
+      error: { code: 'FORBIDDEN', message: 'Insufficient permissions within your organization' },
+    });
+    return;
+  }
+
+  next();
+}
 
 /**
  * GET /organizations
@@ -79,7 +122,7 @@ router.post('/', authenticate, requireRole('super_admin', 'admin'), async (req: 
  * GET /organizations/:id
  * Get organization details
  */
-router.get('/:id', authenticate, requireRole('super_admin', 'admin'), async (req: AuthRequest, res: Response) => {
+router.get('/:id', authenticate, requireOwnOrgOrSuperAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const organization = await tenantService.getOrganization(id);
@@ -110,7 +153,7 @@ router.get('/:id', authenticate, requireRole('super_admin', 'admin'), async (req
  * PUT /organizations/:id
  * Update organization
  */
-router.put('/:id', authenticate, requireRole('super_admin', 'admin'), async (req: AuthRequest, res: Response) => {
+router.put('/:id', authenticate, requireOwnOrgOrSuperAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const { name, status, timezone, logoUrl, primaryColor } = req.body;
@@ -167,7 +210,7 @@ router.delete('/:id', authenticate, requireRole('super_admin'), async (req: Auth
 router.get(
   '/:id/credentials',
   authenticate,
-  requireRole('super_admin', 'admin'),
+  requireOwnOrgOrSuperAdmin,
   async (req: AuthRequest, res: Response) => {
     try {
       const { id } = req.params;
@@ -223,7 +266,7 @@ router.get(
 router.post(
   '/:id/credentials/test',
   authenticate,
-  requireRole('super_admin', 'admin'),
+  requireOwnOrgOrSuperAdmin,
   async (req: AuthRequest, res: Response) => {
     try {
       const { apiKey } = req.body;
@@ -240,17 +283,20 @@ router.post(
       const shelterLuvService = new ShelterLuvService(apiKey);
       
       try {
-        const animals = await shelterLuvService.getAnimals({ limit: 5 });
-        
+        const { animals } = await shelterLuvService.getAnimals({ limit: 5 });
+        const first = animals[0] as unknown as Record<string, unknown> | undefined;
+
         res.json({
           success: true,
           message: 'Connection successful',
           animalsFound: animals.length,
-          sampleAnimal: animals[0] ? {
-            name: animals[0].Name,
-            species: animals[0].Type || animals[0].Species,
-            status: animals[0].Status,
-          } : null,
+          sampleAnimal: first
+            ? {
+                name: (first.name ?? first.Name) as string,
+                species: (first.species ?? first.Type) as string,
+                status: (first.status ?? first.Status) as string,
+              }
+            : null,
         });
       } catch (apiError) {
         res.status(400).json({
@@ -278,7 +324,7 @@ router.post(
 router.put(
   '/:id/credentials',
   authenticate,
-  requireRole('super_admin', 'admin'),
+  requireOwnOrgOrSuperAdmin,
   async (req: AuthRequest, res: Response) => {
     try {
       const { id } = req.params;
@@ -378,7 +424,7 @@ router.put(
  * GET /organizations/:id/settings
  * Get all settings for organization
  */
-router.get('/:id/settings', authenticate, requireRole('super_admin', 'admin'), async (req: AuthRequest, res: Response) => {
+router.get('/:id/settings', authenticate, requireOwnOrgOrSuperAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const settings = await tenantService.getSettings(id);
@@ -401,7 +447,7 @@ router.get('/:id/settings', authenticate, requireRole('super_admin', 'admin'), a
  * PUT /organizations/:id/settings
  * Update organization settings
  */
-router.put('/:id/settings', authenticate, requireRole('super_admin', 'admin'), async (req: AuthRequest, res: Response) => {
+router.put('/:id/settings', authenticate, requireOwnOrgOrSuperAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const { key, value } = req.body;

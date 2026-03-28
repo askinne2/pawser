@@ -1,19 +1,25 @@
 # Data Sync Pipeline
 
-> **Type:** Backend PRD  
-> **Feature:** Data Sync Pipeline  
-> **Priority:** Phase 1  
-> **Status:** ✅ Complete  
+> **Type:** Backend PRD
+> **Feature:** Data Sync Pipeline
+> **Priority:** Phase 1
+> **Status:** ✅ Complete
+> **Last Updated:** 2026-03-28
 > **Source:** CodeSpring PRD `31207066-e7e9-4474-a68d-370a9f6d3b2f`
 >
 > **Implementation Notes:**
-> - ✅ BullMQ worker at `apps/api/src/jobs/sync-animals.ts`
-> - ✅ ShelterLuv API integration
-> - ✅ Status filtering fixed (filters for "Available For Adoption")
-> - ✅ Manual sync trigger working
-> - ✅ Sync history endpoint working
-> - 🟡 Status configuration pending (PRD-15 - multi-select statuses)
-> - 🟡 Media worker (R2 upload) needs testing
+> - ✅ BullMQ worker at `apps/api/src/jobs/sync-animals.ts` — auto-starts on API import
+> - ✅ ShelterLuv API integration via `ShelterLuvService` (paginated fetch, type transforms)
+> - ✅ Status filtering: filters for `Available For Adoption` from ShelterLuv
+> - ✅ Manual sync trigger via `POST /api/v1/sync/:orgId`
+> - ✅ Sync history and status via `GET /api/v1/sync/:orgId/status`
+> - ✅ Tier-gated scheduling: trial=30m, basic=15m, pro=5m, enterprise=2m
+> - ✅ Idempotent upserts keyed by `(orgId, externalId)`
+> - ✅ 429 handling: exponential backoff with jitter
+> - ✅ `SyncRun` + `SyncState` records created per job
+> - 🟡 Status configuration pending (PRD-15 — multi-select sync/display statuses)
+> - 🟡 R2 media upload worker needs production testing
+> - 🟡 Email alerts on sync failure not implemented (depends on PRD-12)
 
 ---
 

@@ -1,9 +1,10 @@
 # Pawser Platform — Developer Handbook
 
-Status: Phase 2 Development  
-Scope: Portal (Next.js), Admin (Next.js), API (Express), Worker (BullMQ)  
-Runtime: Vercel (portal/admin), Fly.io (API/worker)  
+Status: Active Development — P0 (widget + admin wiring)
+Scope: Portal (Next.js marketing), Admin (Next.js dashboard), Widget (Vite IIFE), API (Express)
+Runtime: Vercel (portal/admin), Fly.io (api), Cloudflare CDN (widget)
 Infra: Postgres, Redis, Cloudflare R2, Stripe, Resend, Sentry, GA4, PostHog
+Last Updated: 2026-03-28
 
 Contents
 - Quickstart
@@ -100,15 +101,16 @@ PAWSER_BASE_DOMAIN=localhost
 Structure
 ```
 apps/
-  portal/          # Next.js 14 App Router - Public animal portal
-  admin/           # Next.js 14 App Router - Admin dashboard
-  api/             # Express + Zod - REST API
-  worker/          # BullMQ - Background jobs
+  portal/          # Next.js 14 App Router — Marketing site at getpawser.io
+  admin/           # Next.js 14 App Router — Shelter dashboard at app.getpawser.io
+  api/             # Express + Zod — REST API at api.getpawser.io
+  widget/          # Vite + React IIFE — Embeddable bundle at cdn.getpawser.io/widget.js
 packages/
-  database/        # Prisma client + schema
+  database/        # Prisma client + 25-model schema
   shared/          # Types, utils, crypto
-  ui/              # Shared React components
+  ui/              # Shared React components (Button, Badge, StatCard, SyncStatusCard, etc.)
 1-PRD/
+  stitch-export/   # Kindred Slate design system (DESIGN.md + reference HTML files)
   {date}/          # Versioned PRD documents
 ```
 
@@ -129,13 +131,23 @@ Where secrets live
 - Fly.io: fly secrets set ... (api/worker)
 - Prisma migrations run from apps/api
 
+## Domain Conventions
+
+| Surface | Local Dev | Production |
+|---------|-----------|------------|
+| Portal (marketing) | `http://localhost:3000` | `https://getpawser.io` |
+| Admin (shelter dashboard) | `http://localhost:3001` | `https://app.getpawser.io` |
+| API | `http://localhost:3002` | `https://api.getpawser.io` |
+| Widget CDN | `pnpm --filter @pawser/widget build` → `dist/` | `https://cdn.getpawser.io/widget.js` |
+
+Note: The original `{org}.pawser.app` subdomain model is superseded. Tenant resolution for the widget uses `orgSlug` in `window.pawserSettings`. The admin app resolves the org from the authenticated user's JWT (via `OrgProvider`).
+
 ## Tenancy Model
 
 Resolution
-- Host header → slug extraction → Organization lookup
-- URL path: `/[domain]/animals` for portal routing
-- Subdomains: `{org}.pawser.app`
-- Custom domains: Cloudflare-managed, automatic SSL
+- Widget: reads `window.pawserSettings.orgSlug`, calls `GET /api/v1/animals?orgSlug={slug}`
+- Admin: org resolved from JWT payload (`tid` claim) via `OrgProvider` context
+- Super admin: can access any org via `X-Tenant-Id` header on API calls
 
 Rules
 - All DB queries must filter by orgId
@@ -272,6 +284,33 @@ Tokens
 - Access JWT (15 min or 24h dev)
 - Refresh token (30 days, rotation)
 
+## UI Components & Styling
+
+Design system: **Kindred Slate** (exported from Stitch — see `1-PRD/stitch-export/DESIGN.md`)
+
+Tokens
+- Primary brand: `#00113f` (Kindred Slate navy)
+- Typography: Source Sans 3 (loaded via Google Fonts `<link>` in `<head>` — not `@import`)
+- Icons: Material Symbols Outlined (same `<link>` strategy)
+
+Surface tonal hierarchy (6 levels, lightest → darkest)
+- `surface` — page background
+- `surface-container-lowest` — cards, panels
+- `surface-container-low` — sidebar / secondary panels
+- `surface-container` — interactive row hover
+- `surface-container-high` — borders, dividers
+- `surface-container-highest` — disabled states
+
+Component library: `packages/ui/`
+- Shared: `Button`, `Badge`, `StatCard`, `SyncStatusCard`, `Input`, `Label`
+- Widget-specific: `AnimalCard`, `AnimalGrid`, `FilterSidebar`, `FilterDrawer`, `Pagination`, `SkeletonCard`, `EmptyState`
+
+Styling conventions
+- Tailwind CSS with Kindred Slate custom config (`tailwind.config.ts`)
+- All interactive states use `bg-primary` / `text-on-primary` (reads `--widget-primary` CSS var in widget context)
+- Card shadows: ultra-diffuse (`shadow-sm`), 12px border radius
+- No global Tailwind base/reset in widget bundle (scoped to `#pawser-root`)
+
 ## Email System
 
 Provider: Resend
@@ -374,20 +413,25 @@ Prod
 
 ## Phase 2 TODOs
 
-### P0 - Critical
-- [ ] User management pages (super_admin)
-- [ ] Team member management UI
-- [ ] Create organization form
-- [ ] Organization settings page
+### P0 — Critical path to first paying customer
+- [ ] `apps/widget`: Production-ready Vite embed bundle (AnimalGrid, AnimalCard with hover swap, AnimalDetail with lightbox, FilterSidebar, FilterDrawer, Pagination)
+- [ ] `apps/admin`: Widget builder screen (settings panel — primaryColor, adoptUrlBase, animalsPerPage — + live preview iframe)
+- [ ] `apps/admin`: Embed code page (pre-filled `<script>` snippet + copy button + instructions)
+- [ ] `apps/admin`: Integration onboarding flow (API key entry → connection test → first sync trigger)
+- [ ] `apps/portal`: Marketing homepage (Kindred Slate design, hero section, features, pricing table, CTA)
 
-### P1 - Important
-- [ ] Email system (Resend integration)
-- [ ] Password reset flow
-- [ ] Magic link UI
-- [ ] White-label theming expansion
+### P1 — Important for launch
+- [ ] Stripe billing fully wired (checkout session, webhook handlers, plan enforcement in sync scheduler)
+- [ ] Email system end-to-end (Resend templates: `magic-link`, `invitation`, `password-reset`, `trial-ending`)
+- [ ] Password reset end-to-end (API + admin UI + email delivery verified)
+- [ ] Magic link auth UI (request + verify pages in admin)
+- [ ] Team member management UI (invite, role change, remove)
+- [ ] User management pages for `super_admin` (list all users, disable, impersonate)
 
-### P2 - Nice to Have
-- [ ] Portal filter enhancements
-- [ ] Custom domain management UI
-- [ ] Analytics dashboard
-- [ ] RLS policy enforcement
+### P2 — Post-launch
+- [ ] Custom domain management UI (add/verify CNAME for white-label widget)
+- [ ] Analytics dashboard (sync history, animal view counts, conversion events)
+- [ ] RLS policy enforcement (PostgreSQL row-level security audit)
+- [ ] White-label theming expansion (per-org CSS variable overrides beyond `primaryColor`)
+- [ ] Animal filter enhancements (good-with toggles, breed multi-select, age range slider, name search)
+- [ ] Cloudflare Image Variants (on-the-fly resize for AnimalCard thumbnails)

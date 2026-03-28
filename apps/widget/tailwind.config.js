@@ -1,11 +1,15 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  important: '#pawser-root',
   content: ['./src/**/*.{js,ts,jsx,tsx}'],
+  corePlugins: {
+    preflight: false,
+  },
   theme: {
     extend: {
       colors: {
-        "primary":                    "#00113f",
-        "on-primary":                 "#ffffff",
+        primary: 'var(--widget-primary, #00113f)',
+        'on-primary': '#ffffff',
         "primary-container":          "#e0e2ff",
         "on-primary-container":       "#00113f",
         "secondary":                  "#5a5d72",

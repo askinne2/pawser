@@ -1,18 +1,20 @@
 # Super Admin User Management
 
-> **Type:** Frontend PRD  
-> **Feature:** User Management Dashboard  
-> **Priority:** P0 (Critical)  
-> **Status:** 🟡 Scaffolded  
+> **Type:** Frontend PRD
+> **Feature:** User Management Dashboard
+> **Priority:** P0 (Critical — super admin only)
+> **Status:** 🟡 Partial
+> **Last Updated:** 2026-03-28
 > **Depends On:** PRD-05 (Auth & RBAC)
 >
 > **Implementation Notes:**
-> - ✅ API routes created at `apps/api/src/routes/users.ts`
+> - ✅ API routes at `apps/api/src/routes/users.ts` (`GET /users`, `GET /users/:id`, `PUT /users/:id`, `DELETE /users/:id`)
 > - ✅ User list page at `apps/admin/app/(dashboard)/users/page.tsx`
 > - ✅ User detail page at `apps/admin/app/(dashboard)/users/[id]/page.tsx`
-> - 🟡 Needs end-to-end testing
-> - 🟡 Impersonation flow needs testing
-> - 🟡 Disable/enable user needs testing
+> - 🟡 Pages not yet wired to real API (still use mock data); need to call via `/api/proxy/users`
+> - 🟡 Impersonation flow not implemented
+> - 🟡 Disable/enable user action not tested end-to-end
+> - Note: These screens are visible only to `super_admin` users; RBAC enforcement in API is in place.
 
 ---
 

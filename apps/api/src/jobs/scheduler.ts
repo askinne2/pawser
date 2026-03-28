@@ -29,6 +29,9 @@ export async function scheduleAllSyncs(): Promise<void> {
         orderBy: { lastSyncedAt: 'desc' },
         take: 1,
       },
+      dataSources: {
+        where: { isActive: true },
+      },
     },
   });
 
@@ -36,11 +39,12 @@ export async function scheduleAllSyncs(): Promise<void> {
     const plan = org.subscriptions[0]?.plan;
     const syncInterval = plan?.syncIntervalSeconds || 3600; // Default 1 hour
 
-    // Schedule initial sync
-    await scheduleSync(org.id);
+    for (const ds of org.dataSources) {
+      await scheduleSync(org.id, ds.id, 'scheduled');
+    }
 
     console.log(
-      `Scheduled sync for organization ${org.id} (${org.name}) - plan: ${plan?.name || 'trial'}, interval: ${syncInterval / 60}min`
+      `Scheduled sync for organization ${org.id} (${org.name}) - plan: ${plan?.name || 'trial'}, interval: ${syncInterval / 60}min, dataSources: ${org.dataSources.length}`
     );
   }
 
@@ -89,7 +93,9 @@ export function startPeriodicSyncScheduler(): void {
         if (!org.integrationCredentials.length) continue;
         if (!org.dataSources.length) continue;
 
-        await scheduleSync(org.id);
+        for (const ds of org.dataSources) {
+          await scheduleSync(org.id, ds.id, 'scheduled');
+        }
         console.log(`Scheduled sync for organization ${org.id} (due at: ${syncState.nextEligibleAt})`);
       }
 
@@ -107,10 +113,17 @@ export function startPeriodicSyncScheduler(): void {
             none: {},
           },
         },
+        include: {
+          dataSources: {
+            where: { isActive: true },
+          },
+        },
       });
 
       for (const org of neverSynced) {
-        await scheduleSync(org.id);
+        for (const ds of org.dataSources) {
+          await scheduleSync(org.id, ds.id, 'scheduled');
+        }
         console.log(`Scheduled initial sync for organization ${org.id} (${org.name})`);
       }
     } catch (error) {

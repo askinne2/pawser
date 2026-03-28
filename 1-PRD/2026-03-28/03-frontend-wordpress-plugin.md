@@ -1,15 +1,20 @@
 # WordPress Plugin v1
 
-> **Type:** Frontend PRD  
-> **Feature:** WordPress Plugin  
-> **Priority:** Phase 1  
-> **Status:** ✅ Complete  
+> **Type:** Frontend PRD
+> **Feature:** WordPress Plugin
+> **Priority:** Phase 1
+> **Status:** ❌ Superseded
+> **Last Updated:** 2026-03-28
 > **Source:** CodeSpring PRD `c4d4b7ce-e4e7-47bc-bb29-127c5f7603c8`
 >
 > **Implementation Notes:**
-> - Shortcode `[pawser_portal]` working
-> - Iframe embedding with auto-resize
-> - Located at `pawser/wordpress-plugin/`
+> - The iframe-embedding approach via `[pawser_portal]` shortcode is superseded.
+> - The delivery model is now a universal script-tag IIFE bundle (`apps/widget`).
+> - WordPress sites are fully supported as host pages — they embed the widget with two tags:
+>   `<script>window.pawserSettings = {...};</script>` + `<script src="cdn.getpawser.io/widget.js" defer></script>`
+> - No WordPress plugin is required. Any CMS (WordPress, Squarespace, Wix, custom) works the same way.
+> - See PRD-16 for the widget embed bundle specification.
+> - The original iframe auto-resize approach had cross-origin limitations; the script-tag model eliminates them.
 
 ---
 

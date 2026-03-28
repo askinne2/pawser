@@ -1,18 +1,20 @@
 # Public Animal Portal
 
-> **Type:** Frontend PRD  
-> **Feature:** Public Animal Portal  
-> **Priority:** Phase 1  
-> **Status:** ✅ Complete  
+> **Type:** Frontend PRD
+> **Feature:** Public Animal Portal
+> **Priority:** Phase 1
+> **Status:** ❌ Superseded
+> **Last Updated:** 2026-03-28
 > **Source:** CodeSpring PRD `8cbcd0a6-a423-4778-95d1-7bbce44c6ee4`
 >
 > **Implementation Notes:**
-> - Basic portal working at `apps/portal/`
-> - Animal grid with filtering (species, sex, size)
-> - Animal detail pages with photos
-> - Tenant-based routing via slug
-> - See PRD-14 for filter enhancements
-> - See PRD-15 for customization/appearance settings
+> - The Next.js SSR hosted-portal approach described in this PRD is superseded.
+> - Public animal browsing is now delivered by `apps/widget` (Vite IIFE bundle, PRD-16).
+> - The shelter's adopters see the widget embedded in the shelter's own website — not a Pawser-hosted page.
+> - `apps/portal` is now the marketing site at `getpawser.io`, not an adoption portal.
+> - The existing `apps/portal/app/[domain]/animals/` routes are preserved as a **demo/preview environment** only (sales tool, not product).
+> - Filter UI (FilterSidebar, FilterDrawer) was built here but the canonical location is now `apps/widget/src/components/`.
+> - See PRD-16 for the widget embed bundle specification.
 
 ---
 

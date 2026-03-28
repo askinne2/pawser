@@ -1,18 +1,24 @@
 # Stripe Billing & Trials
 
-> **Type:** Backend PRD  
-> **Feature:** Stripe Billing & Subscription Management  
-> **Priority:** Phase 1  
-> **Status:** 🔲 Scaffolded  
+> **Type:** Backend PRD
+> **Feature:** Stripe Billing & Subscription Management
+> **Priority:** Phase 1
+> **Status:** 🔲 Planned
+> **Last Updated:** 2026-03-28
 > **Source:** CodeSpring PRD `18925c52-0de0-4aa0-b896-e7c3da672714`
 >
 > **Implementation Notes:**
-> - ✅ Database models exist (Subscription, Plan)
-> - ✅ Sync interval based on plan tier
-> - 🔲 Stripe customer/subscription creation not implemented
-> - 🔲 Webhook processing not implemented
-> - 🔲 Checkout/billing portal not implemented
-> - 🔲 Trial management not implemented
+> - ✅ `Plan`, `Subscription`, `Invoice` Prisma models defined
+> - ✅ Sync interval gated by plan tier (`syncIntervalSeconds` on `Plan` record)
+> - ✅ `billing.ts` route file exists at `apps/api/src/routes/billing.ts`
+> - ✅ Billing page scaffold at `apps/admin/app/(dashboard)/billing/page.tsx`
+> - ✅ Seed script creates trial plan and assigns org to 14-day trial on first run
+> - 🔲 Stripe SDK not integrated — no customer/subscription creation
+> - 🔲 Checkout session (`POST /billing/checkout-session`) not implemented
+> - 🔲 Billing portal session (`POST /billing/portal-session`) not implemented
+> - 🔲 Stripe webhook handling not implemented
+> - 🔲 Trial expiry enforcement not implemented
+> - 🔲 Plan upgrade/downgrade UI not implemented
 
 ---
 

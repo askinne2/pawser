@@ -1,18 +1,21 @@
 # Email System
 
-> **Type:** Backend PRD  
-> **Feature:** Transactional Email Infrastructure  
-> **Priority:** P1 (Important)  
-> **Status:** 🟡 Scaffolded  
+> **Type:** Backend PRD
+> **Feature:** Transactional Email Infrastructure
+> **Priority:** P1 (Important)
+> **Status:** 🟡 Partial
+> **Last Updated:** 2026-03-28
 > **Depends On:** None (foundational)
 >
 > **Implementation Notes:**
-> - ✅ EmailService created at `apps/api/src/services/EmailService.ts`
-> - ✅ Email worker created at `apps/api/src/jobs/email-worker.ts`
-> - ✅ BullMQ queue setup for async delivery
-> - 🟡 React Email templates need creation
-> - 🟡 Resend integration needs testing
-> - 🟡 Magic link emails need testing
+> - ✅ `EmailService` at `apps/api/src/services/EmailService.ts`
+> - ✅ `email-worker.ts` BullMQ worker for async delivery
+> - ✅ `EmailLog` Prisma model for delivery tracking
+> - ✅ BullMQ queue setup with Redis connection
+> - 🟡 React Email templates not created (magic-link, invitation, password-reset, trial-ending)
+> - 🟡 Resend SDK integration not wired with real API key
+> - 🟡 Magic link email delivery untested end-to-end
+> - Note: TypeScript errors exist in `email-worker.ts` due to ioredis version mismatch in pnpm lockfile — pre-existing, not blocking runtime
 > - 🟡 Invitation emails need testing
 
 ---

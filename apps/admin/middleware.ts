@@ -1,85 +1,64 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import jwt from 'jsonwebtoken';
+
+/**
+ * Next.js middleware runs on the Edge runtime, which does NOT support Node.js
+ * built-ins (no `crypto` module). This means `jsonwebtoken` cannot be used here.
+ *
+ * Security model:
+ *  - Middleware: coarse-grained guard — checks the cookie exists and looks like a JWT.
+ *    This prevents casual unauthenticated browsing and provides UX redirects.
+ *  - API proxy routes: forward the token as a Bearer header to the Express API,
+ *    which verifies the JWT signature with the full Node.js crypto stack.
+ *
+ * In other words: middleware handles redirects, Express handles real auth.
+ */
+
+/** Minimal structural check — a JWT is three base64url segments separated by dots. */
+function looksLikeJwt(value: string): boolean {
+  const parts = value.split('.');
+  return parts.length === 3 && parts.every((p) => p.length > 0);
+}
+
+const PUBLIC_PATHS = new Set(['/login', '/forgot-password', '/reset-password']);
 
 export function middleware(request: NextRequest) {
-  // Allow public routes
+  const { pathname } = request.nextUrl;
+
+  // Always allow public auth routes and Next.js internals
   if (
-    request.nextUrl.pathname.startsWith('/api/auth/login') ||
-    request.nextUrl.pathname === '/login'
+    PUBLIC_PATHS.has(pathname) ||
+    pathname.startsWith('/api/auth/') ||
+    pathname.startsWith('/_next/')
   ) {
     return NextResponse.next();
   }
 
-  // Dev mode auth bypass (for local development only)
+  // Dev mode auth bypass — skips all cookie checks
   if (process.env.NODE_ENV === 'development' && process.env.DEV_AUTH_BYPASS === 'true') {
     console.warn('⚠️  DEV MODE: Authentication bypass is enabled');
     return NextResponse.next();
   }
 
-  // Check for JWT token in Authorization header or cookie
-  const authHeader = request.headers.get('authorization');
-  const token = authHeader?.startsWith('Bearer ')
-    ? authHeader.substring(7)
-    : request.cookies.get('token')?.value;
+  // Check for a plausibly valid JWT token in the httpOnly cookie
+  const token = request.cookies.get('token')?.value;
 
-  if (!token) {
-    // Redirect to login if no token
-    if (request.nextUrl.pathname.startsWith('/api')) {
+  if (!token || !looksLikeJwt(token)) {
+    // API sub-routes get a 401 JSON response; page routes get a redirect
+    if (pathname.startsWith('/api/')) {
       return NextResponse.json(
-        {
-          success: false,
-          error: 'Unauthorized',
-          message: 'Authentication required',
-        },
+        { success: false, error: 'Unauthorized', message: 'Authentication required' },
         { status: 401 }
       );
     }
-    return NextResponse.redirect(new URL('/login', request.url));
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('next', pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
-  // Verify token
-  const secret = process.env.JWT_SECRET;
-  if (!secret) {
-    console.error('JWT_SECRET is not configured');
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Internal server error',
-        message: 'Authentication configuration error',
-      },
-      { status: 500 }
-    );
-  }
-
-  try {
-    jwt.verify(token, secret);
-    return NextResponse.next();
-  } catch (error) {
-    // Invalid token
-    if (request.nextUrl.pathname.startsWith('/api')) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Unauthorized',
-          message: 'Invalid or expired token',
-        },
-        { status: 401 }
-      );
-    }
-    return NextResponse.redirect(new URL('/login', request.url));
-  }
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
-    '/((?!_next/static|_next/image|favicon.ico).*)',
-  ],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 };
-

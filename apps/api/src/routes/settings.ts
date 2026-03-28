@@ -357,4 +357,116 @@ router.put('/slug', async (req: AuthRequest, res: Response) => {
   }
 });
 
+/**
+ * GET /api/v1/organizations/:orgId/settings/widget
+ * Get widget-specific settings (primaryColor, adoptUrlBase, animalsPerPage, defaultSpecies)
+ */
+router.get('/widget', async (req: AuthRequest, res: Response) => {
+  try {
+    const { orgId } = req.params;
+
+    if (!req.user?.isSuperAdmin) {
+      const membership = await prisma.membership.findUnique({
+        where: { orgId_userId: { orgId, userId: req.user!.id } },
+      });
+      if (!membership) {
+        return res.status(403).json({ success: false, error: { code: 'FORBIDDEN', message: 'Access denied' } });
+      }
+    }
+
+    const org = await prisma.organization.findUnique({
+      where: { id: orgId },
+      select: { slug: true, primaryColor: true },
+    });
+
+    if (!org) {
+      return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Organization not found' } });
+    }
+
+    // Load widget-specific settings from key-value store
+    const kvRow = await prisma.organizationSetting.findUnique({
+      where: { organizationId_key: { organizationId: orgId, key: 'widget_settings' } },
+    });
+
+    const stored = (kvRow?.value as Record<string, unknown>) ?? {};
+
+    res.json({
+      success: true,
+      data: {
+        orgSlug: org.slug,
+        primaryColor: (stored.primaryColor as string) ?? org.primaryColor ?? '#00113f',
+        adoptUrlBase: (stored.adoptUrlBase as string) ?? '',
+        animalsPerPage: (stored.animalsPerPage as number) ?? 24,
+        defaultSpecies: (stored.defaultSpecies as string) ?? 'all',
+      },
+    });
+  } catch (error) {
+    console.error('Error getting widget settings:', error);
+    res.status(500).json({ success: false, error: { code: 'INTERNAL_ERROR', message: 'Failed to get widget settings' } });
+  }
+});
+
+/**
+ * PUT /api/v1/organizations/:orgId/settings/widget
+ * Save widget-specific settings
+ */
+router.put('/widget', async (req: AuthRequest, res: Response) => {
+  try {
+    const { orgId } = req.params;
+    const { primaryColor, adoptUrlBase, animalsPerPage, defaultSpecies } = req.body;
+
+    if (!req.user?.isSuperAdmin) {
+      const membership = await prisma.membership.findUnique({
+        where: { orgId_userId: { orgId, userId: req.user!.id } },
+      });
+      if (!membership || !['owner', 'admin'].includes(membership.role)) {
+        return res.status(403).json({ success: false, error: { code: 'FORBIDDEN', message: 'Insufficient permissions' } });
+      }
+    }
+
+    // Validate color format
+    if (primaryColor && !/^#[0-9A-Fa-f]{6}$/.test(primaryColor)) {
+      return res.status(400).json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Invalid hex color' } });
+    }
+
+    const value: Record<string, unknown> = {};
+    if (primaryColor !== undefined) value.primaryColor = primaryColor;
+    if (adoptUrlBase !== undefined) value.adoptUrlBase = adoptUrlBase;
+    if (animalsPerPage !== undefined) value.animalsPerPage = Number(animalsPerPage);
+    if (defaultSpecies !== undefined) value.defaultSpecies = defaultSpecies;
+
+    // Upsert into key-value store
+    await prisma.organizationSetting.upsert({
+      where: { organizationId_key: { organizationId: orgId, key: 'widget_settings' } },
+      update: { value: value as object },
+      create: { organizationId: orgId, key: 'widget_settings', value: value as object },
+    });
+
+    // Mirror primaryColor onto Organization row for public API consumers
+    if (primaryColor) {
+      await prisma.organization.update({
+        where: { id: orgId },
+        data: { primaryColor },
+      });
+    }
+
+    await prisma.auditLog.create({
+      data: {
+        actorUserId: req.user!.id,
+        orgId,
+        action: 'widget_settings_updated',
+        entityType: 'organization_setting',
+        entityId: orgId,
+        metadata: { updatedFields: Object.keys(value) },
+        ipAddress: (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.ip,
+      },
+    });
+
+    res.json({ success: true, data: { widgetSettings: value } });
+  } catch (error) {
+    console.error('Error saving widget settings:', error);
+    res.status(500).json({ success: false, error: { code: 'INTERNAL_ERROR', message: 'Failed to save widget settings' } });
+  }
+});
+
 export default router;

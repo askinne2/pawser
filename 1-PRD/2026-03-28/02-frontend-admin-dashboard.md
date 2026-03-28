@@ -1,8 +1,28 @@
 # Tenant Management (Admin Dashboard)
 
-> **Type:** Frontend PRD  
-> **Feature:** Admin Dashboard  
+> **Type:** Frontend PRD
+> **Feature:** Admin Dashboard
+> **Priority:** Phase 1
+> **Status:** 🟡 Partial
+> **Last Updated:** 2026-03-28
 > **Source:** CodeSpring PRD `948fad95-3d4c-4fc8-ac51-55278283871c`
+>
+> **Implementation Notes:**
+> - ✅ Kindred Slate dashboard shell: fixed sidebar (w-64), sticky topbar, `OrgProvider` context
+> - ✅ Overview page (`/`) with StatCards, SyncStatusCard, quick actions — wired to live API
+> - ✅ Widget Builder page (`/widget-builder`) with settings panel + live preview (React state only; settings not yet persisted)
+> - ✅ Embed Code page (`/embed-code`) with pre-filled script tag `<CodeSnippet>`
+> - ✅ Integration page (`/integration`) — 3-step wizard wired to real credentials API
+> - ✅ Billing page (`/billing`) scaffold exists; Stripe wiring pending (PRD-06)
+> - ✅ Settings page (`/settings`) scaffold exists
+> - ✅ Pets page (`/pets`) scaffold exists
+> - ✅ User Management pages (`/users`, `/users/[id]`) exist — super admin only
+> - ✅ Organization Management pages (`/organizations`, `/organizations/[id]`) exist — super admin only
+> - ✅ httpOnly JWT cookies, middleware guards, token refresh cycle via `/api/proxy/`
+> - 🟡 Widget Builder settings panel does not yet save to `PUT /api/v1/organizations/:id/settings`
+> - 🟡 Billing page not wired to Stripe (depends on PRD-06)
+> - 🟡 User/member management pages untested end-to-end
+> - Note: This PRD originally described a super-admin org management UI. The product has evolved — the primary user is now a shelter owner/admin managing their own org, not a Pawser super admin. The original super-admin screens are preserved under `/organizations/`.
 
 ---
 
@@ -141,3 +161,14 @@ Provide super admins a centralized UI to view, create, and manage tenant organiz
 | Accessibility | No critical issues in automated checks (axe) |
 | RBAC enforcement | Zero unauthorized access confirmed via tests |
 | Flow completion rate | > 80% for change-tier and create-organization |
+
+## Implementation Status
+
+✅ Organization list page with basic filters  
+✅ Organization detail page with tabs  
+✅ Login flow  
+⚠️ Missing: Create Organization form  
+⚠️ Missing: Bulk actions  
+⚠️ Missing: Impersonate functionality  
+⚠️ Missing: Domain management UI  
+⚠️ Missing: Full Stripe billing integration

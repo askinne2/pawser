@@ -1,21 +1,32 @@
 # Subdomain Access
 
-> **Type:** Backend PRD  
-> **Feature:** Multi-Tenant Subdomain Routing  
+> **Type:** Backend PRD
+> **Feature:** Multi-Tenant Subdomain Routing
+> **Priority:** Phase 1
+> **Status:** ❌ Superseded
+> **Last Updated:** 2026-03-28
 > **Source:** CodeSpring PRD `cfdc0076-f7a2-4c89-8e31-747b7cb1bf07`
+>
+> **Implementation Notes:**
+> - The `{org}.pawser.app` subdomain model is superseded by the three-domain architecture.
+> - Tenant resolution for the widget no longer uses subdomain routing. Instead, the shelter embeds `window.pawserSettings = { orgSlug: "their-slug", ... }` and the widget calls `GET /api/v1/animals?orgSlug={orgSlug}`.
+> - The three fixed domains are: `getpawser.io` (portal), `app.getpawser.io` (admin), `cdn.getpawser.io` (widget CDN).
+> - `apps/api/src/routes/subdomain.ts` is preserved for backward compatibility with any existing subdomain-based integrations.
+> - `apps/portal/app/[domain]/` route is preserved as a demo/preview environment (slug passed via URL path, not subdomain).
+> - `DomainMapping` model remains in schema for custom domain support in a future release.
 
 ---
 
 ## Feature Overview
 
-Provide multi-tenant routing via subdomains in the format `{org}.yourdomain.com`. Incoming requests are mapped to an Organization (tenant) by subdomain, enforcing tenant scoping for all backend/API operations and enabling safe, cacheable public access. Supports slug assignment/updates with strict validation, uniqueness, and operational safeguards.
+Provide multi-tenant routing via subdomains in the format `{org}.pawser.app`. Incoming requests are mapped to an Organization (tenant) by subdomain, enforcing tenant scoping for all backend/API operations and enabling safe, cacheable public access. Supports slug assignment/updates with strict validation, uniqueness, and operational safeguards.
 
 ## Requirements
 
 ### Host-to-Tenant Resolution
 
 - Resolve tenant by the first DNS label of the Host header: `slug = host.split('.')[0]`
-- Only accept hosts ending with `.yourdomain.com`; reject apex and non-matching domains with 404 `TENANT_NOT_FOUND`
+- Only accept hosts ending with `.pawser.app`; reject apex and non-matching domains with 404 `TENANT_NOT_FOUND`
 - Normalize to lowercase; ignore port. Do not trust X-Forwarded-Host unless from trusted proxies
 
 **Tenant status handling:**
@@ -95,7 +106,7 @@ Provide multi-tenant routing via subdomains in the format `{org}.yourdomain.com`
 
 ## User Stories
 
-1. **Visitor:** As an adopter, when I visit `{org}.yourdomain.com`, I see the correct organization's portal or receive a clear unavailable message if suspended.
+1. **Visitor:** As an adopter, when I visit `{org}.pawser.app`, I see the correct organization's portal or receive a clear unavailable message if suspended.
 2. **Org Owner/Admin:** I can set and update my organization's subdomain, receiving validation feedback and immediate routing changes.
 3. **Support/SRE:** I can resolve a host to tenant metadata for debugging.
 
@@ -115,7 +126,7 @@ Provide multi-tenant routing via subdomains in the format `{org}.yourdomain.com`
   "slug": "happy-tails",
   "status": "active",
   "plan": "pro",
-  "canonicalHost": "happy-tails.yourdomain.com",
+  "canonicalHost": "happy-tails.pawser.app",
   "cacheTTL": 300
 }
 ```
@@ -149,3 +160,13 @@ Metrics for cache hit/miss; tag Sentry/PostHog with `tenantId` and `slug`
 | Subdomain update propagation | ≤ 60 seconds globally |
 | TENANT_NOT_FOUND error rate | ≤ 0.5% of total traffic |
 | Internal endpoint success | ≥ 99.9% |
+
+## Implementation Status
+
+✅ Tenant resolution middleware  
+✅ Redis caching for tenant lookup  
+✅ Subdomain routes  
+✅ URL path-based routing (local dev)  
+⚠️ Missing: Custom domain UI management  
+⚠️ Missing: DNS verification flow  
+⚠️ Missing: Reserved slug enforcement
