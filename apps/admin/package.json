@@ -15,7 +15,7 @@
     "next": "^14.0.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "axios": "^1.6.2",
+    "axios": "^1.13.5",
     "bcryptjs": "^2.4.3",
     "jsonwebtoken": "^9.0.2",
     "@radix-ui/react-dialog": "^1.0.5",
