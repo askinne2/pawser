@@ -12,11 +12,17 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "clean": "turbo run clean",
+    "docker:up": "docker compose -f docker/docker-compose.yml --project-directory docker up -d postgres redis",
+    "docker:up:all": "docker compose -f docker/docker-compose.yml --project-directory docker up -d",
+    "docker:down": "docker compose -f docker/docker-compose.yml --project-directory docker down",
+    "docker:start": "docker compose -f docker/docker-compose.yml --project-directory docker start postgres redis",
+    "docker:stop": "docker compose -f docker/docker-compose.yml --project-directory docker stop postgres redis",
     "db:generate": "pnpm --filter @pawser/database db:generate",
     "db:push": "pnpm --filter @pawser/database db:push",
     "db:migrate": "pnpm --filter @pawser/database db:migrate",
     "db:studio": "pnpm --filter @pawser/database db:studio",
-    "db:seed": "pnpm --filter @pawser/database db:seed"
+    "db:seed": "pnpm --filter @pawser/database db:seed",
+    "db:cleanup-animals": "pnpm --filter @pawser/database db:cleanup-animals"
   },
   "devDependencies": {
     "turbo": "^1.10.16",

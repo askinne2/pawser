@@ -228,7 +228,7 @@ export default async function AnimalsPage({
   const uniqueSex = new Set<string>();
   const uniqueSize = new Set<string>();
 
-  allAnimals.forEach((animal) => {
+  allAnimals.forEach((animal: any) => {
     // Species counts
     if (animal.species) {
       facets.species[animal.species] = (facets.species[animal.species] || 0) + 1;
@@ -313,7 +313,7 @@ export default async function AnimalsPage({
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                {animals.map((animal) => {
+                {animals.map((animal: Animal) => {
                   const attrs = animal.attributes as Record<string, boolean> | null;
                   return (
                     <Link

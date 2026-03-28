@@ -2,6 +2,7 @@
 node_modules
 .pnp
 .pnp.js
+.pnpm-store/
 
 # Testing
 coverage
@@ -39,6 +40,9 @@ pnpm-debug.log*
 # OS
 .DS_Store
 Thumbs.db
+
+# TypeScript
+*.tsbuildinfo
 
 # Turbo
 .turbo

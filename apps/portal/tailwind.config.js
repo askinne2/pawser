@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: "class",
   content: [
     './app/**/*.{js,ts,jsx,tsx,mdx}',
     './src/**/*.{js,ts,jsx,tsx,mdx}',
@@ -8,47 +9,44 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        border: 'hsl(var(--border))',
-        input: 'hsl(var(--input))',
-        ring: 'hsl(var(--ring))',
-        background: 'hsl(var(--background))',
-        foreground: 'hsl(var(--foreground))',
-        primary: {
-          DEFAULT: 'hsl(var(--primary))',
-          foreground: 'hsl(var(--primary-foreground))',
-        },
-        secondary: {
-          DEFAULT: 'hsl(var(--secondary))',
-          foreground: 'hsl(var(--secondary-foreground))',
-        },
-        destructive: {
-          DEFAULT: 'hsl(var(--destructive))',
-          foreground: 'hsl(var(--destructive-foreground))',
-        },
-        muted: {
-          DEFAULT: 'hsl(var(--muted))',
-          foreground: 'hsl(var(--muted-foreground))',
-        },
-        accent: {
-          DEFAULT: 'hsl(var(--accent))',
-          foreground: 'hsl(var(--accent-foreground))',
-        },
-        popover: {
-          DEFAULT: 'hsl(var(--popover))',
-          foreground: 'hsl(var(--popover-foreground))',
-        },
-        card: {
-          DEFAULT: 'hsl(var(--card))',
-          foreground: 'hsl(var(--card-foreground))',
-        },
+        "primary":                    "#00113f",
+        "on-primary":                 "#ffffff",
+        "primary-container":          "#e0e2ff",
+        "on-primary-container":       "#00113f",
+        "secondary":                  "#5a5d72",
+        "on-secondary":               "#ffffff",
+        "secondary-container":        "#dfe1f9",
+        "tertiary":                   "#76546e",
+        "tertiary-container":         "#ffd7f3",
+        "on-tertiary-container":      "#2d1228",
+        "error":                      "#ba1a1a",
+        "error-container":            "#ffdad6",
+        "background":                 "#faf9ff",
+        "surface":                    "#faf9ff",
+        "on-surface":                 "#1a1b20",
+        "on-surface-variant":         "#434655",
+        "surface-variant":            "#e2e1ec",
+        "outline":                    "#767680",
+        "outline-variant":            "#c4c5d0",
+        "surface-container-lowest":   "#ffffff",
+        "surface-container-low":      "#f3f3fa",
+        "surface-container":          "#eeedf4",
+        "surface-container-high":     "#e8e7ee",
+        "surface-container-highest":  "#e2e2e9",
+      },
+      fontFamily: {
+        "headline": ["'Source Sans 3'", "sans-serif"],
+        "body":     ["'Source Sans 3'", "sans-serif"],
+        "label":    ["'Source Sans 3'", "sans-serif"],
       },
       borderRadius: {
-        lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
+        DEFAULT: "0.75rem",
+        lg:      "0.75rem",
+        xl:      "1rem",
+        "2xl":   "1.25rem",
+        full:    "9999px",
       },
     },
   },
   plugins: [],
 };
-

@@ -67,7 +67,7 @@ export default function FilterSidebar({
     const merged = { ...currentFilters, ...updates };
 
     Object.entries(merged).forEach(([key, value]) => {
-      if (value && value !== '' && value !== false) {
+      if (value !== undefined && value !== null && value !== '' && value !== false) {
         params.set(key, String(value));
       }
     });

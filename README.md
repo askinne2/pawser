@@ -101,23 +101,22 @@ pawser/
    
    **Note:** The root `.env` file is required because Prisma (used for database migrations) looks for `DATABASE_URL` starting from the current directory and walking up to the root. The `docker/.env` file is only used by docker-compose.
 
-3. **Start Docker services:**
+3. **Start Docker services** (from repo root):
    ```bash
-   cd docker
-   docker-compose up -d postgres redis
+   pnpm run docker:up
    ```
+   
+   Equivalent: `cd docker && docker compose up -d postgres redis`. Use `pnpm run docker:start` to start existing containers. Full stack (API, admin, portal in Docker): `pnpm run docker:up:all`.
    
    **Note:** PostgreSQL is configured to use port `5434` (instead of the default `5432`) to avoid conflicts with other local PostgreSQL instances.
 
-4. **Set up database:**
+4. **Set up database** (from repo root):
    ```bash
-   cd packages/database
    pnpm run db:push
    ```
 
 5. **Seed initial data (optional but recommended):**
    ```bash
-   cd packages/database
    pnpm run db:seed
    ```
    
@@ -125,7 +124,7 @@ pawser/
    - Super admin user: `andrew@21adsmedia.com` / `merrimack1`
    - Demo organization for testing
 
-5. **Generate JWT secret (if not already set):**
+6. **Generate JWT secret (if not already set):**
    ```bash
    # Generate a secure JWT secret
    node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
@@ -133,7 +132,7 @@ pawser/
    
    Copy the output and add it to your `.env` file as `JWT_SECRET=...`
 
-6. **Start development servers:**
+7. **Start development servers:**
    ```bash
    # From root directory
    pnpm dev
@@ -153,10 +152,9 @@ pawser/
    pnpm build
    ```
 
-2. **Start with Docker Compose:**
+2. **Start with Docker Compose** (from repo root):
    ```bash
-   cd docker
-   docker-compose up -d
+   pnpm run docker:up:all
    ```
 
 ## Configuration

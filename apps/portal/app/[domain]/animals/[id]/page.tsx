@@ -72,7 +72,7 @@ export async function generateMetadata({
     return { title: 'Animal Not Found' };
   }
 
-  const primaryPhoto = animal.mediaAssets.find((m) => m.isPrimary)?.url ||
+  const primaryPhoto = animal.mediaAssets.find((m: { isPrimary: boolean; url: string }) => m.isPrimary)?.url ||
     animal.mediaAssets[0]?.url;
 
   const breed = [animal.breedPrimary, animal.breedSecondary].filter(Boolean).join(' / ');
@@ -153,7 +153,7 @@ export default async function AnimalDetailPage({
   }
 
   const primaryColor = tenant.primaryColor || '#3b82f6';
-  const photos = animal.mediaAssets.map((m) => m.url);
+  const photos = animal.mediaAssets.map((m: { isPrimary: boolean; url: string }) => m.url);
   const breed = [animal.breedPrimary, animal.breedSecondary].filter(Boolean).join(' / ');
 
   // Parse attributes
@@ -238,7 +238,7 @@ export default async function AnimalDetailPage({
                 gap: '0.5rem',
               }}
             >
-              {photos.slice(1, 7).map((photo, index) => (
+              {photos.slice(1, 7).map((photo: string, index: number) => (
                 <div
                   key={index}
                   style={{

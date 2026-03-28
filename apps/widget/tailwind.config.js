@@ -1,0 +1,46 @@
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: ['./src/**/*.{js,ts,jsx,tsx}'],
+  theme: {
+    extend: {
+      colors: {
+        "primary":                    "#00113f",
+        "on-primary":                 "#ffffff",
+        "primary-container":          "#e0e2ff",
+        "on-primary-container":       "#00113f",
+        "secondary":                  "#5a5d72",
+        "on-secondary":               "#ffffff",
+        "secondary-container":        "#dfe1f9",
+        "tertiary":                   "#76546e",
+        "tertiary-container":         "#ffd7f3",
+        "on-tertiary-container":      "#2d1228",
+        "error":                      "#ba1a1a",
+        "error-container":            "#ffdad6",
+        "background":                 "#faf9ff",
+        "surface":                    "#faf9ff",
+        "on-surface":                 "#1a1b20",
+        "on-surface-variant":         "#434655",
+        "surface-variant":            "#e2e1ec",
+        "outline":                    "#767680",
+        "outline-variant":            "#c4c5d0",
+        "surface-container-lowest":   "#ffffff",
+        "surface-container-low":      "#f3f3fa",
+        "surface-container":          "#eeedf4",
+        "surface-container-high":     "#e8e7ee",
+        "surface-container-highest":  "#e2e2e9",
+      },
+      fontFamily: {
+        "headline": ["'Source Sans 3'", "sans-serif"],
+        "body":     ["'Source Sans 3'", "sans-serif"],
+      },
+      borderRadius: {
+        DEFAULT: "0.75rem",
+        lg:      "0.75rem",
+        xl:      "1rem",
+        "2xl":   "1.25rem",
+        full:    "9999px",
+      },
+    },
+  },
+  plugins: [],
+};
